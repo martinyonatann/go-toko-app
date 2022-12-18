@@ -1,22 +1,18 @@
 package handler
 
 import (
-	"bytes"
 	"encoding/json"
 	"errors"
-	"log"
 	"net/http"
+	"strconv"
+
+	logger "github.com/rs/zerolog/log"
 
 	"github.com/gorilla/mux"
+	"github.com/martinyonatann/go-invoice/api/presenter"
 	"github.com/martinyonatann/go-invoice/usecase/user"
 	"github.com/urfave/negroni"
 )
-
-type Response struct {
-	ResponseCode int         `json:"StatusCode"`
-	Message      string      `json:"Message"`
-	Data         interface{} `json:"Data"`
-}
 
 func createUser(service user.UseCase) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -24,49 +20,61 @@ func createUser(service user.UseCase) http.Handler {
 
 		err := json.NewDecoder(r.Body).Decode(&createUserPayload)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Failed Create User"))
+			logger.Err(err).Msg("createUser_decode")
+
+			//nolint: errcheck
+			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
+
 		userData, err := service.CreateUser(r.Context(), createUserPayload)
 		if err != nil {
-			log.Println(err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Failed Create User"))
+			logger.Err(err).Msg("[handlerUser][CreateUser]")
+
+			//nolint: errcheck
+			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
 
-		resp, _ := generateResponse(http.StatusOK, Response{
-			ResponseCode: http.StatusOK,
-			Message:      http.StatusText(http.StatusOK),
-			Data:         userData,
-		})
-
-		w.WriteHeader(http.StatusOK)
-		w.Write(resp.Bytes())
+		//nolint: errcheck
+		presenter.OK(userData).ToJSON(w)
 	})
 }
 
-func generateResponse(statusCode int, dataResponse interface{}) (inputBuffer bytes.Buffer, err error) {
-	if dataResponse == nil {
-		return inputBuffer, errors.New("failed generate response")
-	}
+func getUserById(service user.UseCase) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		vars := mux.Vars(r)
 
-	if err := json.NewEncoder(&inputBuffer).Encode(dataResponse); err != nil {
-		return inputBuffer, errors.New("failed encode data response")
-	}
+		id, err := strconv.ParseInt(vars["id"], 10, 64)
+		if err != nil {
+			logger.Err(errors.New("user_id is required")).Msg("getUserById_varsid")
 
-	return inputBuffer, err
+			panic(err)
+		}
+
+		getUserPayload := user.GetUserRequest{UserID: id}
+
+		userData, err := service.GetUser(r.Context(), getUserPayload)
+		if err != nil {
+			logger.Err(err).Msg("[handlerUser][getUserById]")
+
+			//nolint: errcheck
+			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
+			return
+		}
+
+		//nolint: errcheck
+		presenter.OK(userData).ToJSON(w)
+	})
 }
 
 //MakeUserHandlers make url handlers
 func MakeUserHandlers(r *mux.Router, n negroni.Negroni, service user.UseCase) {
 	r.Handle("/v1/user", n.With(
 		negroni.Wrap(createUser(service)),
-	)).Methods("POST", "OPTIONS").Name("createUser")
+	)).Methods(http.MethodPost, http.MethodOptions).Name("createUser")
 
-	// r.Handle("/v1/user/{id}", n.With(
-	// 	negroni.Wrap(getUser(service)),
-	// )).Methods("GET", "OPTIONS").Name("getUser")
+	r.Handle("/v1/user/{id}", n.With(
+		negroni.Wrap(getUserById(service)),
+	)).Methods(http.MethodGet, http.MethodOptions).Name("getUser")
 }
