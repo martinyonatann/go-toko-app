@@ -44,6 +44,11 @@ jobs:
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v2
+      enable:
+        - errcheck
+      errcheck:
+      exclude-functions:
+      - (http.ResponseWriter).Write
       with:
         version: latest
         skip-go-installation: true
