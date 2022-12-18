@@ -1,0 +1,5 @@
+.fleet/
+bin/
+.idea/*
+.vscode/*
+.DS_Store

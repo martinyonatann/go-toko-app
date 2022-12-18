@@ -21,12 +21,11 @@ type GetUserRequest struct {
 }
 
 type GetUserResponse struct {
-	ID        int64     `json:"id"`
-	FullName  string    `json:"fullname"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID        int64     `json:"user_id"`
+	FullName  string    `json:"fullname,omitempty"`
+	Email     string    `json:"email,omitempty"`
+	Password  string    `json:"password,omitempty"`
+	CreatedAt time.Time `json:"created_at,omitempty"`
 }
 
 type CreateUserRequest struct {
@@ -36,7 +35,7 @@ type CreateUserRequest struct {
 }
 
 type CreateUserResponse struct {
-	ID        int64     `json:"id,omitempty"`
+	ID        int64     `json:"user_id,omitempty"`
 	FullName  string    `json:"fullname,omitempty"`
 	Email     string    `json:"email,omitempty"`
 	Password  string    `json:"password,omitempty"`
