@@ -17,6 +17,7 @@ import (
 
 	"github.com/martinyonatann/go-invoice/api/handler"
 	"github.com/martinyonatann/go-invoice/api/middleware"
+	"github.com/martinyonatann/go-invoice/api/presenter"
 	"github.com/martinyonatann/go-invoice/infrastructure/database"
 	"github.com/martinyonatann/go-invoice/infrastructure/repository/user_repository"
 	"github.com/martinyonatann/go-invoice/pkg/metric"
@@ -49,8 +50,7 @@ func main() {
 	http.Handle("/", r)
 	http.Handle("/metrics", promhttp.Handler())
 	r.HandleFunc("/ping", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		w.Write([]byte("healthcheck success"))
+		presenter.OK("API OK!")
 	})
 
 	logger := logging.New(os.Stderr, "logger: ", logging.Lshortfile)

@@ -22,6 +22,7 @@ func createUser(service user.UseCase) http.Handler {
 		if err != nil {
 			logger.Err(err).Msg("createUser_decode")
 
+			//nolint: errcheck
 			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
@@ -30,10 +31,12 @@ func createUser(service user.UseCase) http.Handler {
 		if err != nil {
 			logger.Err(err).Msg("[handlerUser][CreateUser]")
 
+			//nolint: errcheck
 			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
 
+		//nolint: errcheck
 		presenter.OK(userData).ToJSON(w)
 	})
 }
@@ -55,10 +58,12 @@ func getUserById(service user.UseCase) http.Handler {
 		if err != nil {
 			logger.Err(err).Msg("[handlerUser][getUserById]")
 
+			//nolint: errcheck
 			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
 
+		//nolint: errcheck
 		presenter.OK(userData).ToJSON(w)
 	})
 }
