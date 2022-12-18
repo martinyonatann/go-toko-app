@@ -11,6 +11,14 @@ on:
       - staging
 
 jobs:
+  linters:
+    enable:
+      - errcheck
+
+  linters-settings:
+    errcheck:
+      exclude-functions:
+        - (net/http.ResponseWriter).Write
 
   go-lint:
     runs-on: ubuntu-20.04
@@ -44,11 +52,6 @@ jobs:
 
     - name: golangci-lint
       uses: golangci/golangci-lint-action@v2
-      enable:
-        - errcheck
-      errcheck:
-      exclude-functions:
-      - (http.ResponseWriter).Write
       with:
         version: latest
         skip-go-installation: true
