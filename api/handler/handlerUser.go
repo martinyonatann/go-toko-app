@@ -22,8 +22,7 @@ func createUser(service user.UseCase) http.Handler {
 		if err != nil {
 			logger.Err(err).Msg("createUser_decode")
 
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write([]byte("Failed Create User"))
+			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
 
@@ -31,14 +30,11 @@ func createUser(service user.UseCase) http.Handler {
 		if err != nil {
 			logger.Err(err).Msg("[handlerUser][CreateUser]")
 
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(presenter.GenerateFailedResponse(http.StatusInternalServerError, err.Error()))
-
+			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		w.Write(presenter.GenerateSuccessResponse(http.StatusOK, userData))
+		presenter.OK(userData).ToJSON(w)
 	})
 }
 
@@ -59,14 +55,11 @@ func getUserById(service user.UseCase) http.Handler {
 		if err != nil {
 			logger.Err(err).Msg("[handlerUser][getUserById]")
 
-			w.WriteHeader(http.StatusInternalServerError)
-			w.Write(presenter.GenerateFailedResponse(http.StatusInternalServerError, err.Error()))
-
+			presenter.Fail(err.Error(), http.StatusInternalServerError).ToJSON(w)
 			return
 		}
 
-		w.WriteHeader(http.StatusOK)
-		w.Write(presenter.GenerateSuccessResponse(http.StatusOK, userData))
+		presenter.OK(userData).ToJSON(w)
 	})
 }
 

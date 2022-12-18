@@ -1,54 +1,37 @@
 package presenter
 
 import (
-	"bytes"
 	"encoding/json"
 	"net/http"
-
-	logger "github.com/rs/zerolog/log"
 )
 
-type Response struct {
-	ResponseCode int         `json:"status_code"`
-	Message      string      `json:"message"`
-	Error        string      `json:"error,omitempty"`
-	Data         interface{} `json:"data"`
+const (
+	SuccessText = "success"
+	FailedText  = "failed"
+)
+
+type response struct {
+	Body       *responseBody
+	StatusCode int
 }
 
-func GenerateSuccessResponse(
-	statusCode int,
-	data interface{},
-) []byte {
-	var inputBuffer bytes.Buffer
-
-	dataResp := &Response{
-		ResponseCode: statusCode,
-		Message:      "success",
-		Data:         data,
-	}
-
-	if err := json.NewEncoder(&inputBuffer).Encode(dataResp); err != nil {
-		logger.Err(err).Msg("GenerateSuccessResponse_encoder")
-	}
-
-	return inputBuffer.Bytes()
+type responseBody struct {
+	StatusCode int         `json:"rc"`
+	Message    string      `json:"message,omitempty"`
+	Error      string      `json:"error,omitempty"`
+	Data       interface{} `json:"data,omitempty"`
 }
 
-func GenerateFailedResponse(
-	statusCode int,
-	errorText string,
-) []byte {
-	var inputBuffer bytes.Buffer
+func (r response) ToJSON(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(r.StatusCode)
+	return json.NewEncoder(w).Encode(r.Body)
+}
 
-	dataResp := &Response{
-		ResponseCode: statusCode,
-		Message:      http.StatusText(statusCode),
-		Error:        errorText,
-	}
+func OK(data interface{}) *response {
+	return &response{&responseBody{Message: SuccessText, Data: data, StatusCode: http.StatusOK}, http.StatusOK}
+}
 
-	if err := json.NewEncoder(&inputBuffer).Encode(dataResp); err != nil {
-		logger.Err(err).Msg("GenerateFailedResponse_encoder")
-	}
-
-	return inputBuffer.Bytes()
+func Fail(message string, statusCode int) *response {
+	return &response{&responseBody{StatusCode: statusCode, Message: FailedText, Error: message}, statusCode}
 }
