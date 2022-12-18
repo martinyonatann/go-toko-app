@@ -12,10 +12,12 @@ on:
 
 jobs:
 
-  audit:
+  go-lint:
     runs-on: ubuntu-20.04
     steps:
     - uses: actions/checkout@v2
+
+    - uses: reviewdog/action-eclint@v1
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -39,6 +41,10 @@ jobs:
 
     - name: Install golint
       run: go install golang.org/x/lint/golint@latest
+
+    - name: golangci-lint-action
+      uses: golangci/golangci-lint-action@v2
+      with: { version: v1.42.1, args: --timeout=5m }
 
     - name: Run golint
       run: golint ./...
