@@ -21,6 +21,7 @@ func createUser(service user.UseCase) http.Handler {
 		err := json.NewDecoder(r.Body).Decode(&createUserPayload)
 		if err != nil {
 			logger.Err(err).Msg("createUser_decode")
+
 			w.WriteHeader(http.StatusInternalServerError)
 			w.Write([]byte("Failed Create User"))
 			return

@@ -1,46 +1,44 @@
 name: golangci-lint
+
 on:
   push:
-    tags:
-      - v*
-    branches:
-      - master
+    branches: 
       - main
+      - staging
   pull_request:
-permissions:
-  contents: read
-  # Optional: allow read access to pull request. Use with `only-new-issues` option.
-  # pull-requests: read
+    branches:
+      - main
+      - staging
+
 jobs:
-  golangci:
-    name: lint
-    runs-on: ubuntu-latest
+
+  audit:
+    runs-on: ubuntu-20.04
     steps:
-      - uses: actions/setup-go@v3
-        with:
-          go-version: 1.17
-      - uses: actions/checkout@v3
-      - name: golangci-lint
-        uses: golangci/golangci-lint-action@v3
-        with:
-          # Optional: version of golangci-lint to use in form of v1.2 or v1.2.3 or `latest` to use the latest version
-          version: v1.29
+    - uses: actions/checkout@v2
 
-          # Optional: working directory, useful for monorepos
-          # working-directory: somedir
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.18
 
-          # Optional: golangci-lint command line arguments.
-          # args: --issues-exit-code=0
+    - name: Verify dependencies
+      run: go mod verify
 
-          # Optional: show only new issues if it's a pull request. The default value is `false`.
-          # only-new-issues: true
+    - name: Build
+      run: go build -v ./...
 
-          # Optional: if set to true then the all caching functionality will be complete disabled,
-          #           takes precedence over all other caching options.
-          # skip-cache: true
+    - name: Run go vet
+      run: go vet ./...
 
-          # Optional: if set to true then the action don't cache or restore ~/go/pkg.
-          # skip-pkg-cache: true
+    - name: Install staticcheck
+      run: go install honnef.co/go/tools/cmd/staticcheck@latest
 
-          # Optional: if set to true then the action don't cache or restore ~/.cache/go-build.
-          # skip-build-cache: true
+    - name: Run staticcheck
+      run: staticcheck ./...
+
+    - name: Install golint
+      run: go install golang.org/x/lint/golint@latest
+
+    - name: Run golint
+      run: golint ./...
