@@ -1,12 +1,12 @@
-package contract
+package user_repository
 
 import (
 	"context"
 	"time"
 )
 
-type UseCase interface {
-	GetUser(ctx context.Context, request GetUserRequest) (GetUserResponse, error)
+type Repository interface {
+	GetUserById(ctx context.Context, request GetUserRequest) (GetUserResponse, error)
 	CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
 
 	// SearchUsers(query string) ([]*models.User, error)
