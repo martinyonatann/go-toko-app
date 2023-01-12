@@ -5,17 +5,17 @@ import (
 	"errors"
 	"strings"
 
-	"github.com/martinyonatann/go-invoice/infrastructure/repository/user_repository"
+	user_repository "github.com/martinyonatann/go-invoice/internal/repository"
 	logger "github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func New(r user_repository.Repository) *Feat {
+func New(r user_repository.UserRepository) *Feat {
 	return &Feat{userRepository: r}
 }
 
 type Feat struct {
-	userRepository user_repository.Repository
+	userRepository user_repository.UserRepository
 }
 
 var ErrUserIdNotFound = errors.New("user_id not found")

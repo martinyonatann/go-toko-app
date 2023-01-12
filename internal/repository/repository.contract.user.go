@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-type Repository interface {
+type UserRepository interface {
 	GetUserById(ctx context.Context, request GetUserRequest) (GetUserResponse, error)
 	CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
 
