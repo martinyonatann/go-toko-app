@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 
-	"github.com/martinyonatann/go-invoice/infrastructure/repository/postgresql_query"
+	"github.com/martinyonatann/go-invoice/internal/repository/postgresql_query"
 )
 
-func NewUserRepository(db *sql.DB) Repository {
+func New(db *sql.DB) UserRepository {
 	return &Repo{db: db}
 }
 
