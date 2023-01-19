@@ -48,3 +48,24 @@ func (x *Repo) GetUserById(ctx context.Context, request GetUserRequest) (respons
 
 	return response, err
 }
+
+func (x *Repo) ListUsers(ctx context.Context, req ListUsersRequest) (resp ListUsersResponse, err error) {
+	query := postgresql_query.ListUsers
+
+	a, err := x.db.Query(query)
+	if err != nil {
+		return resp, err
+	}
+
+	defer a.Close()
+
+	for a.Next() {
+		user := GetUserResponse{}
+		if err := a.Scan(&user.ID, &user.FullName, &user.Email, &user.CreatedAt); err != nil {
+			return resp, err
+		}
+		resp = append(resp, user)
+	}
+
+	return resp, err
+}

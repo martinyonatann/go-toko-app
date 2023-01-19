@@ -8,9 +8,9 @@ import (
 type UserRepository interface {
 	GetUserById(ctx context.Context, request GetUserRequest) (GetUserResponse, error)
 	CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
-
+	ListUsers(ctx context.Context, request ListUsersRequest) (ListUsersResponse, error)
 	// SearchUsers(query string) ([]*models.User, error)
-	// ListUsers() ([]*models.User, error)
+
 	// UpdateUser(e *models.User) error
 	// DeleteUser(id int64) error
 }
@@ -43,3 +43,7 @@ type CreateUserResponse struct {
 	UpdatedAt time.Time `json:"updated_at,omitempty"`
 	DeletedAt time.Time `json:"deleted_at,omitempty"`
 }
+
+type ListUsersRequest struct{}
+
+type ListUsersResponse []GetUserResponse

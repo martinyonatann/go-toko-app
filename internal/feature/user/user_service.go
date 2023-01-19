@@ -6,16 +6,18 @@ import (
 	"strings"
 
 	user_repository "github.com/martinyonatann/go-invoice/internal/repository"
+	"github.com/rs/zerolog"
 	logger "github.com/rs/zerolog/log"
 	"golang.org/x/crypto/bcrypt"
 )
 
-func New(r user_repository.UserRepository) *Feat {
-	return &Feat{userRepository: r}
-}
-
 type Feat struct {
 	userRepository user_repository.UserRepository
+	log            zerolog.Logger
+}
+
+func New(r user_repository.UserRepository, log zerolog.Logger) *Feat {
+	return &Feat{userRepository: r}
 }
 
 var ErrUserIdNotFound = errors.New("user_id not found")
@@ -88,6 +90,25 @@ func (x *Feat) GetUser(
 	}
 
 	return response, err
+}
+
+func (x *Feat) ListUsers(ctx context.Context, request ListUsersRequest) (resp ListUsersResponse, err error) {
+	dataUsers, err := x.userRepository.ListUsers(ctx, user_repository.ListUsersRequest{})
+	if err != nil {
+		x.log.Err(err).Msg("[ListUsers]ListUsers")
+		return resp, err
+	}
+
+	for _, v := range dataUsers {
+		resp = append(resp, GetUserResponse{
+			ID:        v.ID,
+			FullName:  v.FullName,
+			Email:     v.Email,
+			CreatedAt: v.CreatedAt,
+		})
+	}
+
+	return resp, err
 }
 
 func generatePassword(raw string) (string, error) {

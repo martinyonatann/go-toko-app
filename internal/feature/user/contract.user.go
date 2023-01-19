@@ -8,12 +8,7 @@ import (
 type UseCase interface {
 	GetUser(ctx context.Context, request GetUserRequest) (response GetUserResponse, err error)
 	CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
-
-	// SearchUsers(query string) ([]*models.User, error)
-	// ListUsers() ([]*models.User, error)
-
-	// UpdateUser(e *models.User) error
-	// DeleteUser(id int64) error
+	ListUsers(ctx context.Context, request ListUsersRequest) (ListUsersResponse, error)
 }
 
 type GetUserRequest struct {
@@ -41,3 +36,7 @@ type CreateUserResponse struct {
 	Password  string    `json:"password,omitempty"`
 	CreatedAt time.Time `json:"created_at,omitempty"`
 }
+
+type ListUsersRequest struct{}
+
+type ListUsersResponse []GetUserResponse
