@@ -3,13 +3,12 @@ package http
 import (
 	"encoding/json"
 	"net/http"
-	"strconv"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/martinyonatann/go-invoice/internal/feature/user"
-	api "github.com/martinyonatann/go-invoice/internal/server/delivery"
+	"github.com/martinyonatann/go-invoice/internal/utils"
 	"github.com/rs/zerolog"
-	logger "github.com/rs/zerolog/log"
 )
 
 type UserHandler struct {
@@ -17,7 +16,7 @@ type UserHandler struct {
 	log    zerolog.Logger
 }
 
-func New(s user.UseCase, log zerolog.Logger) api.UsersHandlers {
+func New(s user.UseCase, log zerolog.Logger) *UserHandler {
 	return &UserHandler{s, log}
 }
 
@@ -26,21 +25,6 @@ type responseBody struct {
 	Message    string      `json:"message"`
 	Error      string      `json:"error,omitempty"`
 	Data       interface{} `json:"data"`
-}
-
-type Response struct {
-	StatusCode int
-	Header     http.Header
-	Body       []byte
-	Message    map[string]string
-	Meta, Data interface{}
-}
-
-type CaptureError struct {
-	Err         error  `json:"error,omitempty"`
-	UserMsg     string `json:"message,omitempty"`
-	InternalMsg string `json:"internal_message,omitempty"`
-	MoreInfo    string `json:"more_info,omitempty"`
 }
 
 func (x *UserHandler) Register() echo.HandlerFunc {
@@ -58,61 +42,99 @@ func (x *UserHandler) Register() echo.HandlerFunc {
 		if err != nil {
 			x.log.Err(err).Msg("[handlerUser][CreateUser]")
 
-			return c.JSON(500, x.NewResponse(http.StatusInternalServerError, nil, createUserPayload, err, "handler.user.register"))
+			return c.JSON(500, responseBody{StatusCode: 500, Message: http.StatusText(500), Error: err.Error()})
 
 		}
 
-		return c.JSON(http.StatusOK, x.NewResponse(http.StatusOK, userData, createUserPayload, err, "handler.user.register"))
-	}
-}
-func (x *UserHandler) GetUserByID() echo.HandlerFunc {
-	return func(c echo.Context) error {
-		id, err := strconv.ParseInt(c.Param("id"), 10, 64)
-		if err != nil {
-			x.log.Err(err).Msg("[handlerUser]GetUserByID_ParseInt")
-
-			return err
-		}
-
-		getUserPayload := user.GetUserRequest{UserID: id}
-
-		userData, err := x.userUC.GetUser(c.Request().Context(), getUserPayload)
-		if err != nil {
-			logger.Err(err).Msg("[handlerUser][getUserById]")
-
-			return err
-		}
-		return c.JSON(http.StatusOK, responseBody{
-			StatusCode: http.StatusOK,
-			Message:    http.StatusText(http.StatusOK),
-			Data:       userData,
-		})
+		return c.JSON(http.StatusOK, responseBody{http.StatusOK, http.StatusText(http.StatusOK), "", userData})
 	}
 }
 
-func (x *UserHandler) ListUsers() echo.HandlerFunc {
+// func (x *UserHandler) GetUserByID() echo.HandlerFunc {
+// 	return func(c echo.Context) error {
+// 		id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+// 		if err != nil {
+// 			x.log.Err(err).Msg("[handlerUser]GetUserByID_ParseInt")
+
+// 			return err
+// 		}
+
+// 		getUserPayload := user.GetUserRequest{UserID: id}
+
+// 		userData, err := x.userUC.GetUser(c.Request().Context(), getUserPayload)
+// 		if err != nil {
+// 			logger.Err(err).Msg("[handlerUser][getUserById]")
+
+// 			return err
+// 		}
+// 		return c.JSON(http.StatusOK, responseBody{
+// 			StatusCode: http.StatusOK,
+// 			Message:    http.StatusText(http.StatusOK),
+// 			Data:       userData,
+// 		})
+// 	}
+// }
+
+// func (x *UserHandler) ListUsers() echo.HandlerFunc {
+// 	return func(c echo.Context) (err error) {
+// 		defer func() {
+// 			x.log.Err(err).Interface("size", c.Response().Size).Interface("status", c.Response().Status).Msg("handler.user.ListUsers")
+// 		}()
+// 		payload := user.ListUsersRequest{}
+
+// 		dataUsers, err := x.userUC.ListUsers(c.Request().Context(), payload)
+// 		if err != nil {
+// 			x.log.Err(err).Msg("[ListUsers][ListUsers]")
+
+// 			return c.JSON(500, responseBody{StatusCode: 500, Message: http.StatusText(500), Error: err.Error()})
+// 		}
+
+// 		return c.JSON(http.StatusOK, responseBody{StatusCode: 200, Message: http.StatusText(200), Data: dataUsers})
+// 	}
+// }
+
+func (x *UserHandler) Login() echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
-		defer func() {
-			x.log.Err(err).Interface("size", c.Response().Size).Interface("status", c.Response().Status).Msg("handler.user.ListUsers")
-		}()
-		payload := user.ListUsersRequest{}
+		// tokenAuth := c.Request().Header.Get("Authorization")
+		// if !strings.HasPrefix(tokenAuth, "Bearer") {
+		// 	return c.JSON(http.StatusUnauthorized, responseBody{StatusCode: http.StatusUnauthorized, Message: http.StatusText(http.StatusUnauthorized), Error: "invalid token"})
+		// }
 
-		dataUsers, err := x.userUC.ListUsers(c.Request().Context(), payload)
+		// claims, err := utils.VerifyToken(strings.TrimPrefix(tokenAuth, "Bearer "))
+		// if err != nil {
+		// 	return c.JSON(http.StatusUnauthorized, responseBody{StatusCode: http.StatusUnauthorized, Message: http.StatusText(http.StatusUnauthorized), Error: "token not found"})
+		// }
+		// return c.JSON(http.StatusOK, responseBody{StatusCode: 200, Data: claims, Message: http.StatusText(200)})
+		payload := user.LoginRequest{}
+
+		err = json.NewDecoder(c.Request().Body).Decode(&payload)
 		if err != nil {
-			x.log.Err(err).Msg("[ListUsers][ListUsers]")
+			x.log.Err(err).Msg("[Login]createUser_decode")
 
-			return c.JSON(500, x.NewResponse(http.StatusInternalServerError, nil, payload, err, "handler.user.ListUsers"))
+			return err
 		}
 
-		return c.JSON(http.StatusOK, Response{StatusCode: 200, Data: dataUsers})
-		// return c.JSON(http.StatusOK, x.NewResponse(http.StatusOK, dataUsers, payload, err, "handler.user.register"))
+		userData, err := x.userUC.Login(c.Request().Context(), payload)
+		if err != nil {
+			x.log.Err(err).Msg("[Login]Login")
+
+			return c.JSON(500, responseBody{StatusCode: 500, Message: http.StatusText(500), Error: err.Error()})
+		}
+		return c.JSON(http.StatusOK, responseBody{http.StatusOK, http.StatusText(http.StatusOK), "", userData})
 	}
 }
 
-func (x *UserHandler) NewResponse(statusCode int, data, payload interface{}, err error, msg string) (resp responseBody) {
-	defer func() {
-		x.log.Err(err).Interface("request", payload).Interface("response", resp).Msg(msg)
-	}()
+func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		tokenAuth := c.Request().Header.Get("Authorization")
+		if !strings.HasPrefix(tokenAuth, "Bearer") {
+			return c.JSON(http.StatusUnauthorized, responseBody{StatusCode: http.StatusUnauthorized, Message: http.StatusText(http.StatusUnauthorized), Error: "invalid token"})
+		}
 
-	return responseBody{StatusCode: statusCode, Message: http.StatusText(statusCode), Error: err.Error(), Data: data}
+		claims, err := utils.VerifyToken(strings.TrimPrefix(tokenAuth, "Bearer "))
+		if err != nil {
+			return c.JSON(http.StatusUnauthorized, responseBody{StatusCode: http.StatusUnauthorized, Message: http.StatusText(http.StatusUnauthorized), Error: "token not found"})
+		}
+		return c.JSON(http.StatusOK, responseBody{StatusCode: 200, Data: claims, Message: http.StatusText(200)})
+	}
 }

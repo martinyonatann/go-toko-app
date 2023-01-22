@@ -9,6 +9,7 @@ type UseCase interface {
 	GetUser(ctx context.Context, request GetUserRequest) (response GetUserResponse, err error)
 	CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
 	ListUsers(ctx context.Context, request ListUsersRequest) (ListUsersResponse, error)
+	Login(ctx context.Context, request LoginRequest) (LoginResponse, error)
 }
 
 type GetUserRequest struct {
@@ -40,3 +41,16 @@ type CreateUserResponse struct {
 type ListUsersRequest struct{}
 
 type ListUsersResponse []GetUserResponse
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+type LoginResponse struct {
+	ID        int64     `json:"id"`
+	FullName  string    `json:"fullname"`
+	Email     string    `json:"email"`
+	CreatedAt time.Time `json:"created_at"`
+	Token     string    `json:"token"`
+}

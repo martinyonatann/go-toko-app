@@ -37,6 +37,7 @@ func Run(ctx context.Context) error {
 		"DB_USER",
 		"DB_PASS",
 		"APP_PORT",
+		"JWT_SECRET_KEY",
 	}
 
 	if err := utils.Require(require...); err != nil {

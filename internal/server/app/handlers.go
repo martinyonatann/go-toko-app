@@ -2,12 +2,16 @@ package app
 
 import (
 	"context"
+	"os"
 
+	"github.com/golang-jwt/jwt/v4"
+	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/martinyonatann/go-invoice/internal/feature/user"
 	user_repository "github.com/martinyonatann/go-invoice/internal/repository"
 	"github.com/martinyonatann/go-invoice/internal/server/delivery/http"
+	"github.com/martinyonatann/go-invoice/internal/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -49,8 +53,31 @@ func (x *Server) InitHandlers(ctx context.Context) error {
 		Users:   userHandlers,
 	})
 
+	// Configure middleware with the custom claims type
+	config := echojwt.Config{
+		NewClaimsFunc: func(c echo.Context) jwt.Claims {
+			return new(utils.MyJWTClaims)
+		},
+		SigningKey: []byte(os.Getenv("JWT_SECRET_KEY")),
+		ErrorHandler: func(c echo.Context, err error) error {
+			return c.JSON(401, struct {
+				StatusCode int    `json:"rc"`
+				Message    string `json:"message"`
+				Error      string `json:"error,omitempty"`
+			}{
+				401, "unauthorization", "token invalid or expired",
+			},
+			)
+		},
+	}
+
+	health.Use(echojwt.WithConfig(config))
+
 	health.GET("", func(c echo.Context) error {
-		return c.JSON(200, map[string]string{"status": "OK"})
+		user := c.Get("user").(*jwt.Token)
+		claims := user.Claims.(*utils.MyJWTClaims)
+		name := claims.FullName
+		return c.String(200, "Welcome "+name+"!")
 	})
 
 	return nil
