@@ -3,11 +3,9 @@ package http
 import (
 	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/labstack/echo/v4"
 	"github.com/martinyonatann/go-invoice/internal/feature/user"
-	"github.com/martinyonatann/go-invoice/internal/utils"
 	"github.com/rs/zerolog"
 )
 
@@ -124,6 +122,7 @@ func (x *UserHandler) Login() echo.HandlerFunc {
 	}
 }
 
+/*
 func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		tokenAuth := c.Request().Header.Get("Authorization")
@@ -138,3 +137,4 @@ func authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		return c.JSON(http.StatusOK, responseBody{StatusCode: 200, Data: claims, Message: http.StatusText(200)})
 	}
 }
+*/
