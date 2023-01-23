@@ -10,8 +10,12 @@ import (
 
 func main() {
 	if os.Getenv("ENVIRONMENT") == "local" {
-		godotenv.Load()
+		if err := godotenv.Load(); err != nil {
+			panic(err)
+		}
 	}
 
-	app.Run(context.Background())
+	if err := app.Run(context.Background()); err != nil {
+		panic(err)
+	}
 }
