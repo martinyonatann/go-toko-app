@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type List []interface{}
@@ -97,4 +98,12 @@ func VerifyToken(tokenString string) (jwt.MapClaims, error) {
 		return claims, nil
 	}
 	return nil, err
+}
+
+func GeneratePassword(raw string) ([]byte, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(raw), bcrypt.DefaultCost)
+	if err != nil {
+		return nil, err
+	}
+	return hash, nil
 }

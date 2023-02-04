@@ -1,4 +1,4 @@
-module github.com/martinyonatann/go-invoice
+module github.com/martinyonatann/go-toko-app
 
 go 1.18
 
@@ -35,6 +35,11 @@ require (
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/dig v1.16.0 // indirect
+	go.uber.org/fx v1.19.1 // indirect
+	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/sys v0.3.0 // indirect
 	golang.org/x/text v0.5.0 // indirect

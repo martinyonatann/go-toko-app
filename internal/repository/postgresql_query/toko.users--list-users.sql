@@ -3,5 +3,4 @@ SELECT
     fullname, 
     email, 
     created_at
-FROM invoice.users
-WHERE user_id = $1;
+FROM toko.users ORDER BY created_at DESC

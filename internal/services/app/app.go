@@ -12,8 +12,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	prom "github.com/labstack/echo-contrib/prometheus"
 	"github.com/labstack/echo/v4"
-	"github.com/martinyonatann/go-invoice/internal/utils"
-	"github.com/martinyonatann/go-invoice/pkg/metric"
+	"github.com/martinyonatann/go-toko-app/internal/pkg/metric"
+	"github.com/martinyonatann/go-toko-app/internal/utils"
 	"github.com/rs/zerolog"
 )
 

@@ -3,12 +3,17 @@ package postgresql_query
 import _ "embed"
 
 var (
-	//go:embed invoice.users--insert.sql
+	//go:embed toko.users--insert.sql
 	UserInsert string
-	//go:embed invoice.users--get-user-by-email.sql
+	//go:embed toko.users--get-user-by-email.sql
 	GetUserByEmail string
-	//go:embed invoice.users--get-user-by-user-id.sql
+	//go:embed toko.users--get-user-by-user-id.sql
 	GetUserById string
-	//go:embed invoice.users--list-users.sql
+	//go:embed toko.users--list-users.sql
 	ListUsers string
+
+	//go:embed toko.items--list-items.sql
+	ListItems string
+	//go:embed toko.items-get-item-by-id.sql
+	GetItemByID string
 )

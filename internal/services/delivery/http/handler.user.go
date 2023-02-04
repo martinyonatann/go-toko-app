@@ -5,16 +5,16 @@ import (
 	"net/http"
 
 	"github.com/labstack/echo/v4"
-	"github.com/martinyonatann/go-invoice/internal/feature/user"
+	"github.com/martinyonatann/go-toko-app/internal/usecase/contract"
 	"github.com/rs/zerolog"
 )
 
 type UserHandler struct {
-	userUC user.UseCase
+	userUC contract.UseCase
 	log    zerolog.Logger
 }
 
-func New(s user.UseCase, log zerolog.Logger) *UserHandler {
+func New(s contract.UseCase, log zerolog.Logger) *UserHandler {
 	return &UserHandler{s, log}
 }
 
@@ -27,7 +27,7 @@ type responseBody struct {
 
 func (x *UserHandler) Register() echo.HandlerFunc {
 	return func(c echo.Context) error {
-		createUserPayload := user.CreateUserRequest{}
+		createUserPayload := contract.CreateUserRequest{}
 
 		err := json.NewDecoder(c.Request().Body).Decode(&createUserPayload)
 		if err != nil {
@@ -103,7 +103,7 @@ func (x *UserHandler) Login() echo.HandlerFunc {
 		// 	return c.JSON(http.StatusUnauthorized, responseBody{StatusCode: http.StatusUnauthorized, Message: http.StatusText(http.StatusUnauthorized), Error: "token not found"})
 		// }
 		// return c.JSON(http.StatusOK, responseBody{StatusCode: 200, Data: claims, Message: http.StatusText(200)})
-		payload := user.LoginRequest{}
+		payload := contract.LoginRequest{}
 
 		err = json.NewDecoder(c.Request().Body).Decode(&payload)
 		if err != nil {

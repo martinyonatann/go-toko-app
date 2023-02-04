@@ -8,10 +8,10 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/martinyonatann/go-invoice/internal/feature/user"
-	user_repository "github.com/martinyonatann/go-invoice/internal/repository"
-	"github.com/martinyonatann/go-invoice/internal/server/delivery/http"
-	"github.com/martinyonatann/go-invoice/internal/utils"
+	"github.com/martinyonatann/go-toko-app/internal/repository/user_repository"
+	"github.com/martinyonatann/go-toko-app/internal/services/delivery/http"
+	"github.com/martinyonatann/go-toko-app/internal/usecase/user_usecase"
+	"github.com/martinyonatann/go-toko-app/internal/utils"
 	"github.com/rs/zerolog/log"
 )
 
@@ -24,7 +24,7 @@ func (x *Server) InitHandlers(ctx context.Context) error {
 	userRepository := user_repository.New(x.DB.DB)
 
 	// Init UseCases
-	userService := user.New(userRepository, x.log)
+	userService := user_usecase.New(userRepository, x.log)
 
 	// Init Handlers
 	userHandlers := http.New(userService, x.log)

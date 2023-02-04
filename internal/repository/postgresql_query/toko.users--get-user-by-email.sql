@@ -4,5 +4,5 @@ SELECT
     email,
     password,
     created_at
-FROM invoice.users
+FROM toko.users
 WHERE email = $1;

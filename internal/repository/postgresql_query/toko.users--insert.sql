@@ -1,4 +1,4 @@
-INSERT INTO invoice.users (
+INSERT INTO toko.users (
     "fullname",
     "email",
     "password",

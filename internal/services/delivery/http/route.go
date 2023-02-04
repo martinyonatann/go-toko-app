@@ -2,7 +2,7 @@ package http
 
 import (
 	"github.com/labstack/echo/v4"
-	"github.com/martinyonatann/go-invoice/internal/server/delivery"
+	"github.com/martinyonatann/go-toko-app/internal/services/delivery"
 )
 
 type RoutePayload struct {

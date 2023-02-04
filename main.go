@@ -5,10 +5,16 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
-	"github.com/martinyonatann/go-invoice/internal/server/app"
+	"github.com/martinyonatann/go-toko-app/internal/services/app"
 )
 
 func main() {
+	/*	fx.New(
+			fx.Options(
+				fx.Invoke(app.Run),
+			),
+		).Run()
+	*/
 	if os.Getenv("ENVIRONMENT") == "local" {
 		if err := godotenv.Load(); err != nil {
 			panic(err)
