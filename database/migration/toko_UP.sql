@@ -9,11 +9,50 @@ CREATE TABLE IF NOT EXISTS toko.users (
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
--- Create the items table
-CREATE TABLE IF NOT EXISTS toko.items (
-    item_id SERIAL PRIMARY KEY,
-    item_name VARCHAR(255),
-    description TEXT,
-    price NUMERIC(10, 2),
-    created_at TIMESTAMPTZ
+
+-- Create Category Table
+CREATE TABLE IF NOT EXISTS categories (
+  category_id SERIAL PRIMARY KEY,
+  name VARCHAR(255)
+);
+
+-- Create Product Table
+CREATE TABLE IF NOT EXISTS products (
+  product_id SERIAL PRIMARY KEY,
+  name VARCHAR(255),
+  description TEXT,
+  price DECIMAL(10, 2),
+  category_id INT REFERENCES categories(category_id)
+);
+
+-- Create Cart Table
+CREATE TABLE IF NOT EXISTS carts (
+  cart_id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(user_id),
+  product_id INT REFERENCES products(product_id),
+  quantity INT
+);
+
+-- Create Wishlist Table
+CREATE TABLE IF NOT EXISTS wishlists (
+  wishlist_id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(user_id),
+  product_id INT REFERENCES products(product_id)
+);
+
+-- Create Order Table
+CREATE TABLE IF NOT EXISTS orders (
+  order_id SERIAL PRIMARY KEY,
+  user_id INT REFERENCES users(user_id),
+  order_date DATE,
+  total_amount DECIMAL(10, 2)
+);
+
+-- Create OrderItem Table
+CREATE TABLE IF NOT EXISTS order_items (
+  order_item_id SERIAL PRIMARY KEY,
+  order_id INT REFERENCES orders(order_id),
+  product_id INT REFERENCES products(product_id),
+  quantity INT,
+  price DECIMAL(10, 2)
 );

@@ -62,12 +62,12 @@ type (
 		CreatedAt time.Time `json:"created_at"`
 		Token     string    `json:"token"`
 	}
-)
 
-type UseCase struct {
-	userRepository user_repository.UserRepository
-	log            zerolog.Logger
-}
+	UseCase struct {
+		userRepository user_repository.UserRepository
+		log            zerolog.Logger
+	}
+)
 
 func New(r user_repository.UserRepository, log zerolog.Logger) UserUC {
 	return &UseCase{userRepository: r, log: log}

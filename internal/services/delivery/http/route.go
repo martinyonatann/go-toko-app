@@ -5,12 +5,16 @@ import (
 	"github.com/martinyonatann/go-toko-app/internal/services/delivery"
 )
 
-type RoutePayload struct {
-	Version *echo.Group
-	Users   delivery.UsersHandlers
-}
+type (
+	RoutePayload struct {
+		Handlers delivery.Handlers
+		Version  *echo.Group
+	}
+)
 
 func InitRoute(request RoutePayload) {
-	request.Version.POST("/user/register", request.Users.Register())
-	request.Version.POST("/user/auth", request.Users.Login())
+	request.Version.POST("/user/register", request.Handlers.Register())
+	request.Version.POST("/user/auth", request.Handlers.Login())
+
+	request.Version.POST("/product/:id", request.Handlers.GetProductByID())
 }

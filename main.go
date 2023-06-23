@@ -9,7 +9,7 @@ import (
 )
 
 func main() {
-	if os.Getenv("ENVIRONMENT") == "local" {
+	if os.Getenv("APP_ENV") == "local" {
 		godotenv.Load()
 	}
 

@@ -6,26 +6,9 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/martinyonatann/go-toko-app/internal/usecase/user_usecase"
-	"github.com/rs/zerolog"
 )
 
-type UserHandler struct {
-	userUC user_usecase.UserUC
-	log    zerolog.Logger
-}
-
-func New(s user_usecase.UserUC, log zerolog.Logger) *UserHandler {
-	return &UserHandler{s, log}
-}
-
-type responseBody struct {
-	StatusCode int         `json:"rc"`
-	Message    string      `json:"message"`
-	Error      string      `json:"error,omitempty"`
-	Data       interface{} `json:"data"`
-}
-
-func (x *UserHandler) Register() echo.HandlerFunc {
+func (x *Handler) Register() echo.HandlerFunc {
 	return func(c echo.Context) error {
 		createUserPayload := user_usecase.CreateUserRequest{}
 
@@ -36,7 +19,7 @@ func (x *UserHandler) Register() echo.HandlerFunc {
 			return err
 		}
 
-		userData, err := x.userUC.CreateUser(c.Request().Context(), createUserPayload)
+		userData, err := x.UserUC.CreateUser(c.Request().Context(), createUserPayload)
 		if err != nil {
 			x.log.Err(err).Msg("[handlerUser][CreateUser]")
 
@@ -48,7 +31,7 @@ func (x *UserHandler) Register() echo.HandlerFunc {
 	}
 }
 
-func (x *UserHandler) Login() echo.HandlerFunc {
+func (x *Handler) Login() echo.HandlerFunc {
 	return func(c echo.Context) (err error) {
 		payload := user_usecase.LoginRequest{}
 
@@ -59,7 +42,7 @@ func (x *UserHandler) Login() echo.HandlerFunc {
 			return err
 		}
 
-		userData, err := x.userUC.Login(c.Request().Context(), payload)
+		userData, err := x.UserUC.Login(c.Request().Context(), payload)
 		if err != nil {
 			x.log.Err(err).Msg("[Login]Login")
 

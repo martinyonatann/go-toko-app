@@ -13,7 +13,7 @@ var (
 	ListUsers string
 
 	//go:embed toko.items--list-items.sql
-	ListItems string
-	//go:embed toko.items-get-item-by-id.sql
-	GetItemByID string
+	ListProduct string
+	//go:embed toko.products-get-product-by-id.sql
+	GetProductByID string
 )

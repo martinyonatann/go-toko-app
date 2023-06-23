@@ -8,8 +8,10 @@ import (
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/martinyonatann/go-toko-app/internal/repository/product_repository"
 	"github.com/martinyonatann/go-toko-app/internal/repository/user_repository"
 	"github.com/martinyonatann/go-toko-app/internal/services/delivery/http"
+	"github.com/martinyonatann/go-toko-app/internal/usecase/product_usecase"
 	"github.com/martinyonatann/go-toko-app/internal/usecase/user_usecase"
 	"github.com/martinyonatann/go-toko-app/internal/utils"
 	"github.com/rs/zerolog/log"
@@ -18,16 +20,23 @@ import (
 func (x *Server) InitService(ctx context.Context) error {
 	if err := x.initDB(ctx); err != nil {
 		log.Err(err).Msg("app.DBConn")
+
+		return err
 	}
 
 	// Init repositores
 	userRepository := user_repository.New(x.DB.DB)
+	productRepository := product_repository.New(x.DB.DB)
 
 	// Init UseCases
-	userService := user_usecase.New(userRepository, x.log)
+	userUC := user_usecase.New(userRepository, x.log)
+	productUC := product_usecase.New(productRepository, x.log)
 
 	// Init Handlers
-	userHandlers := http.New(userService, x.log)
+	handlers := http.New(x.log, http.UseCases{
+		UserUC:    userUC,
+		ProductUC: productUC,
+	})
 
 	x.echo.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins: []string{"*"},
@@ -49,8 +58,8 @@ func (x *Server) InitService(ctx context.Context) error {
 	health := v1.Group("/health")
 
 	http.InitRoute(http.RoutePayload{
-		Version: v1,
-		Users:   userHandlers,
+		Version:  v1,
+		Handlers: handlers,
 	})
 
 	// Configure middleware with the custom claims type
@@ -71,7 +80,7 @@ func (x *Server) InitService(ctx context.Context) error {
 		},
 	}
 
-	health.Use(echojwt.WithConfig(config))
+	v1.Use(echojwt.WithConfig(config))
 
 	health.GET("", func(c echo.Context) error {
 		user := c.Get("user").(*jwt.Token)
