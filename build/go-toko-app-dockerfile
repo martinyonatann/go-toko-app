@@ -1,0 +1,25 @@
+# build
+FROM golang:1.18-alpine3.15 as builder
+
+RUN apk update && apk upgrade && apk add ca-certificates git build-base librdkafka-dev
+
+WORKDIR /app
+
+COPY go.mod ./
+COPY go.sum ./
+RUN go mod download
+
+COPY ./ ./
+
+RUN GO111MODULE=on go mod tidy
+
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -tags musl --ldflags "-extldflags -static" -a -o go-toko-app main.go
+
+# deploy
+FROM alpine:3.15
+
+RUN apk add --no-cache tzdata
+
+COPY --from=builder /app/go-toko-app .
+
+ENTRYPOINT [ "./go-toko-app" ]
