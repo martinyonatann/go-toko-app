@@ -3,12 +3,39 @@ package item_repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
-	"github.com/martinyonatann/go-toko-app/internal/repository/contract"
 	"github.com/martinyonatann/go-toko-app/internal/repository/postgresql_query"
 )
 
-func New(db *sql.DB) contract.ItemRepository {
+type (
+	ItemRepository interface {
+		GetItemByID(ctx context.Context, req GetItemByIDRequest) (resp GetItemByIDResponse, err error)
+		ListItems(ctx context.Context, req ListItemsRequest) (resp ListItemsResponse, err error)
+	}
+
+	Item struct {
+		ID          int64
+		ItemName    string
+		Description string
+		Price       float64
+		CreatedAt   time.Time
+		UpdatedAt   time.Time
+		DeletedAt   time.Time
+	}
+
+	GetItemByIDRequest struct {
+		ID int64
+	}
+
+	GetItemByIDResponse Item
+
+	ListItemsRequest struct{}
+
+	ListItemsResponse []Item
+)
+
+func New(db *sql.DB) ItemRepository {
 	return &Repo{db: db}
 }
 
@@ -16,11 +43,7 @@ type Repo struct {
 	db *sql.DB
 }
 
-func (x *Repo) GetItemByID(
-	ctx context.Context,
-	req contract.GetItemByIDRequest) (
-	resp contract.GetItemByIDResponse,
-	err error) {
+func (x *Repo) GetItemByID(ctx context.Context, req GetItemByIDRequest) (resp GetItemByIDResponse, err error) {
 	query := postgresql_query.GetItemByID
 
 	if err = x.db.QueryRowContext(ctx, query, req.ID).Scan(
@@ -34,7 +57,7 @@ func (x *Repo) GetItemByID(
 	return resp, err
 }
 
-func (x *Repo) ListItems(ctx context.Context, req contract.ListItemsRequest) (resp contract.ListItemsResponse, err error) {
+func (x *Repo) ListItems(ctx context.Context, req ListItemsRequest) (resp ListItemsResponse, err error) {
 	query := postgresql_query.ListItems
 
 	a, err := x.db.Query(query)
@@ -45,7 +68,7 @@ func (x *Repo) ListItems(ctx context.Context, req contract.ListItemsRequest) (re
 	defer a.Close()
 
 	for a.Next() {
-		item := contract.Item{}
+		item := Item{}
 		if err := a.Scan(&item.ID, &item.ItemName, &item.Description, &item.Price, &item.CreatedAt); err != nil {
 			return resp, err
 		}

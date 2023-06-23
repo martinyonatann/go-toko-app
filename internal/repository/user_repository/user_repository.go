@@ -3,12 +3,55 @@ package user_repository
 import (
 	"context"
 	"database/sql"
+	"time"
 
-	"github.com/martinyonatann/go-toko-app/internal/repository/contract"
 	"github.com/martinyonatann/go-toko-app/internal/repository/postgresql_query"
 )
 
-func New(db *sql.DB) contract.UserRepository {
+type (
+	UserRepository interface {
+		GetUserById(ctx context.Context, request GetUserByIDRequest) (GetUserByIDResponse, error)
+		GetUserByEmail(ctx context.Context, request GetUserByEmailRequest) (GetUserByEmailResponse, error)
+		CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
+		ListUsers(ctx context.Context, request ListUsersRequest) (ListUsersResponse, error)
+	}
+
+	User struct {
+		ID        int64     `json:"id,omitempty"`
+		FullName  string    `json:"fullname,omitempty"`
+		Email     string    `json:"email,omitempty"`
+		Password  string    `json:"password,omitempty"`
+		CreatedAt time.Time `json:"created_at,omitempty"`
+		UpdatedAt time.Time `json:"updated_at,omitempty"`
+		DeletedAt time.Time `json:"deleted_at,omitempty"`
+	}
+
+	GetUserByIDRequest struct {
+		UserID int64 `json:"user_id"`
+	}
+
+	GetUserByIDResponse User
+
+	GetUserByEmailRequest struct {
+		Email string `json:"email"`
+	}
+
+	GetUserByEmailResponse User
+
+	CreateUserRequest struct {
+		FullName string `json:"fullname"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	CreateUserResponse User
+
+	ListUsersRequest struct{}
+
+	ListUsersResponse []User
+)
+
+func New(db *sql.DB) UserRepository {
 	return &Repo{db: db}
 }
 
@@ -18,8 +61,8 @@ type Repo struct {
 
 func (x *Repo) CreateUser(
 	ctx context.Context,
-	request contract.CreateUserRequest) (
-	response contract.CreateUserResponse,
+	request CreateUserRequest) (
+	response CreateUserResponse,
 	err error) {
 	query := postgresql_query.UserInsert
 
@@ -40,7 +83,7 @@ func (x *Repo) CreateUser(
 	return response, err
 }
 
-func (x *Repo) GetUserById(ctx context.Context, request contract.GetUserByIDRequest) (response contract.GetUserByIDResponse, err error) {
+func (x *Repo) GetUserById(ctx context.Context, request GetUserByIDRequest) (response GetUserByIDResponse, err error) {
 	query := postgresql_query.GetUserById
 
 	if err = x.db.QueryRowContext(ctx, query, request.UserID).Scan(
@@ -56,8 +99,8 @@ func (x *Repo) GetUserById(ctx context.Context, request contract.GetUserByIDRequ
 
 func (x *Repo) GetUserByEmail(
 	ctx context.Context,
-	request contract.GetUserByEmailRequest) (
-	response contract.GetUserByEmailResponse,
+	request GetUserByEmailRequest) (
+	response GetUserByEmailResponse,
 	err error) {
 	query := postgresql_query.GetUserByEmail
 
@@ -75,8 +118,8 @@ func (x *Repo) GetUserByEmail(
 
 func (x *Repo) ListUsers(
 	ctx context.Context,
-	req contract.ListUsersRequest) (
-	resp contract.ListUsersResponse,
+	req ListUsersRequest) (
+	resp ListUsersResponse,
 	err error) {
 	query := postgresql_query.ListUsers
 
@@ -88,7 +131,7 @@ func (x *Repo) ListUsers(
 	defer a.Close()
 
 	for a.Next() {
-		user := contract.User{}
+		user := User{}
 		if err := a.Scan(&user.ID, &user.FullName, &user.Email, &user.CreatedAt); err != nil {
 			return resp, err
 		}

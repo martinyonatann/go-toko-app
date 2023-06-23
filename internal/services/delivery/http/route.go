@@ -12,9 +12,5 @@ type RoutePayload struct {
 
 func InitRoute(request RoutePayload) {
 	request.Version.POST("/user/register", request.Users.Register())
-	/*
-		request.Version.GET("/user/:id", request.Users.GetUserByID(), authMiddleware)
-		request.Version.GET("/user", request.Users.ListUsers(), authMiddleware)
-	*/
 	request.Version.POST("/user/auth", request.Users.Login())
 }

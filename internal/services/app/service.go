@@ -15,7 +15,7 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func (x *Server) InitHandlers(ctx context.Context) error {
+func (x *Server) InitService(ctx context.Context) error {
 	if err := x.initDB(ctx); err != nil {
 		log.Err(err).Msg("app.DBConn")
 	}

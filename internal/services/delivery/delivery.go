@@ -5,8 +5,4 @@ import "github.com/labstack/echo/v4"
 type UsersHandlers interface {
 	Register() echo.HandlerFunc
 	Login() echo.HandlerFunc
-	/*
-		GetUserByID() echo.HandlerFunc
-		ListUsers() echo.HandlerFunc
-	*/
 }

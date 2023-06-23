@@ -4,20 +4,72 @@ import (
 	"context"
 	"errors"
 	"strings"
+	"time"
 
-	repoContract "github.com/martinyonatann/go-toko-app/internal/repository/contract"
-	"github.com/martinyonatann/go-toko-app/internal/usecase/contract"
+	"github.com/martinyonatann/go-toko-app/internal/repository/user_repository"
 	"github.com/martinyonatann/go-toko-app/internal/utils"
 	"github.com/rs/zerolog"
 	"golang.org/x/crypto/bcrypt"
 )
 
+type (
+	UserUC interface {
+		GetUser(ctx context.Context, request GetUserRequest) (response GetUserResponse, err error)
+		CreateUser(ctx context.Context, request CreateUserRequest) (response CreateUserResponse, err error)
+		ListUsers(ctx context.Context, request ListUsersRequest) (ListUsersResponse, error)
+		Login(ctx context.Context, request LoginRequest) (LoginResponse, error)
+	}
+
+	GetUserRequest struct {
+		UserID int64 `json:"user_id"`
+	}
+
+	GetUserResponse struct {
+		ID        int64     `json:"user_id"`
+		FullName  string    `json:"fullname,omitempty"`
+		Email     string    `json:"email,omitempty"`
+		Password  string    `json:"password,omitempty"`
+		CreatedAt time.Time `json:"created_at,omitempty"`
+	}
+
+	CreateUserRequest struct {
+		FullName string `json:"fullname"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	CreateUserResponse struct {
+		ID        int64     `json:"user_id,omitempty"`
+		FullName  string    `json:"fullname,omitempty"`
+		Email     string    `json:"email,omitempty"`
+		Password  string    `json:"password,omitempty"`
+		CreatedAt time.Time `json:"created_at,omitempty"`
+	}
+
+	ListUsersRequest struct{}
+
+	ListUsersResponse []GetUserResponse
+
+	LoginRequest struct {
+		Email    string `json:"email"`
+		Password string `json:"password"`
+	}
+
+	LoginResponse struct {
+		ID        int64     `json:"id"`
+		FullName  string    `json:"fullname"`
+		Email     string    `json:"email"`
+		CreatedAt time.Time `json:"created_at"`
+		Token     string    `json:"token"`
+	}
+)
+
 type UseCase struct {
-	userRepository repoContract.UserRepository
+	userRepository user_repository.UserRepository
 	log            zerolog.Logger
 }
 
-func New(r repoContract.UserRepository, log zerolog.Logger) *UseCase {
+func New(r user_repository.UserRepository, log zerolog.Logger) UserUC {
 	return &UseCase{userRepository: r, log: log}
 }
 
@@ -25,8 +77,8 @@ var ErrUserIdNotFound = errors.New("user_id not found")
 
 func (uc *UseCase) CreateUser(
 	ctx context.Context,
-	request contract.CreateUserRequest,
-) (response contract.CreateUserResponse, err error) {
+	request CreateUserRequest,
+) (response CreateUserResponse, err error) {
 	defer func() {
 		uc.log.Err(err).Interface("res", response).Interface("req", request).Msg("[user_usecase]][CreateUser]")
 	}()
@@ -37,7 +89,7 @@ func (uc *UseCase) CreateUser(
 		return response, err
 	}
 
-	createUserPayload := repoContract.CreateUserRequest{
+	createUserPayload := user_repository.CreateUserRequest{
 		FullName: request.FullName,
 		Email:    request.Email,
 		Password: string(newPassword),
@@ -55,7 +107,7 @@ func (uc *UseCase) CreateUser(
 		return response, err
 	}
 
-	response = contract.CreateUserResponse{
+	response = CreateUserResponse{
 		ID:        userData.ID,
 		FullName:  userData.FullName,
 		Email:     userData.Email,
@@ -67,8 +119,8 @@ func (uc *UseCase) CreateUser(
 
 func (uc *UseCase) GetUser(
 	ctx context.Context,
-	request contract.GetUserRequest,
-) (response contract.GetUserResponse, err error) {
+	request GetUserRequest,
+) (response GetUserResponse, err error) {
 	defer func() {
 		uc.log.Err(err).Interface("UserID", request.UserID).Interface("resp", response).Msg("[user_usecase][GetUser]")
 	}()
@@ -80,14 +132,14 @@ func (uc *UseCase) GetUser(
 		}
 	}
 
-	userData, err := uc.userRepository.GetUserById(ctx, repoContract.GetUserByIDRequest{
+	userData, err := uc.userRepository.GetUserById(ctx, user_repository.GetUserByIDRequest{
 		UserID: request.UserID,
 	})
 	if err != nil {
 		return response, err
 	}
 
-	response = contract.GetUserResponse{
+	response = GetUserResponse{
 		ID:        userData.ID,
 		FullName:  userData.FullName,
 		Email:     userData.Email,
@@ -99,9 +151,9 @@ func (uc *UseCase) GetUser(
 
 func (uc *UseCase) ListUsers(
 	ctx context.Context,
-	/*request*/ request contract.ListUsersRequest) (
-	/*response*/ response contract.ListUsersResponse, err error) {
-	dataUsers, err := uc.userRepository.ListUsers(ctx, repoContract.ListUsersRequest{})
+	/*request*/ request ListUsersRequest) (
+	/*response*/ response ListUsersResponse, err error) {
+	dataUsers, err := uc.userRepository.ListUsers(ctx, user_repository.ListUsersRequest{})
 	if err != nil {
 		uc.log.Err(err).Msg("[user_usecase][ListUsers]ListUsers")
 
@@ -109,7 +161,7 @@ func (uc *UseCase) ListUsers(
 	}
 
 	for _, v := range dataUsers {
-		response = append(response, contract.GetUserResponse{
+		response = append(response, GetUserResponse{
 			ID:        v.ID,
 			FullName:  v.FullName,
 			Email:     v.Email,
@@ -122,8 +174,8 @@ func (uc *UseCase) ListUsers(
 
 func (uc *UseCase) Login(
 	ctx context.Context,
-	request contract.LoginRequest) (
-	response contract.LoginResponse, err error) {
+	request LoginRequest) (
+	response LoginResponse, err error) {
 	defer func() {
 		uc.log.Err(err).Interface("response", response).Msg("[user_usecase][Login]")
 	}()
@@ -139,7 +191,7 @@ func (uc *UseCase) Login(
 		}
 	}
 
-	userData, err := uc.userRepository.GetUserByEmail(ctx, repoContract.GetUserByEmailRequest{
+	userData, err := uc.userRepository.GetUserByEmail(ctx, user_repository.GetUserByEmailRequest{
 		Email: request.Email,
 	})
 	if err != nil {
@@ -158,7 +210,7 @@ func (uc *UseCase) Login(
 		return response, err
 	}
 
-	response = contract.LoginResponse{
+	response = LoginResponse{
 		ID:        userData.ID,
 		FullName:  userData.FullName,
 		Email:     userData.Email,

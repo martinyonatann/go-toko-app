@@ -9,12 +9,6 @@ import (
 )
 
 func main() {
-	/*	fx.New(
-			fx.Options(
-				fx.Invoke(app.Run),
-			),
-		).Run()
-	*/
 	if os.Getenv("ENVIRONMENT") == "local" {
 		if err := godotenv.Load(); err != nil {
 			panic(err)

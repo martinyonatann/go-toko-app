@@ -89,7 +89,7 @@ func Run(ctx context.Context) error {
 		}()
 	*/
 
-	if err := app.InitHandlers(ctx); err != nil {
+	if err := app.InitService(ctx); err != nil {
 		app.log.Err(err).Msg("app.InitHandlers")
 		<-time.After(time.Second * 5)
 		panic(err)
